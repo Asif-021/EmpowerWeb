@@ -6,12 +6,13 @@ import { useState } from 'react'
 
 
 function App() {
-  const [colour, setColour] = useState(String);
-  const [magnifyingGlassActive, setMagnifyingGlassActive] = useState(false);
-  const [highContrastActive, setHighContrastActive] = useState(false);
+  const [colour, setColour] = useState<string>('');
+  const [magnifyingGlassActive, setMagnifyingGlassActive] = useState<boolean>(false);
+  const [highContrastActive, setHighContrastActive] = useState<boolean>(false);
+  const [colorBlindness, setColorBlindness] = useState<string>('normal')
 
 
-  const onclick = async () => {
+  const toggleColour = async () => {
     let [tab] = await chrome.tabs.query({active: true, currentWindow:true});
     if (tab && tab.id !== undefined) {
       chrome.scripting.executeScript<string[], void>({
@@ -168,6 +169,27 @@ function App() {
     setHighContrastActive(!highContrastActive);
   }
   
+   // Function to handle colorblind filter change
+   const handleColorBlindnessChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setColorBlindness(event.target.value);
+  };
+
+  // Function to apply colorblind filter (stub function, customize as per requirement)
+  const toggleColorBlindFilter = () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0].id !== undefined) {
+        chrome.scripting.executeScript<String[], void>({
+          target: { tabId: tabs[0].id },
+          args: [colorBlindness],
+          func: (colorBlindness) => {
+            chrome.runtime.sendMessage({ action: 'toggleColorBlindFilter', filterType: colorBlindness });
+            console.log(`Color Blindness filter applied: ${colorBlindness}`);
+          },
+        });
+      }
+    });
+  };
+
   return (
     <>
       <div>
@@ -181,7 +203,7 @@ function App() {
       <h1>Vite + React</h1>
       <div className="card">
         <input type="color" onChange={(e) => setColour(e.currentTarget.value)} />
-        <button onClick={onclick}>
+        <button onClick={toggleColour}>
         </button>
         <p>
           Edit <code>src/App.tsx</code> and save to test HMR
@@ -201,7 +223,59 @@ function App() {
       <button id="toggleHighContrastBtn" onClick={toggleHighContrast}>
         {highContrastActive ? "Disable High Contrast" : "Enable High Contrast"}
       </button>
-
+      
+      <div>
+        <h3>Select Color Blindness Type:</h3>
+        <form>
+          <label>
+            <input
+              type="radio"
+              name="colorBlindness"
+              value="normal"
+              checked={colorBlindness === 'normal'}
+              onChange={handleColorBlindnessChange}
+            />
+            Normal Vision
+          </label>
+          <br />
+          <label>
+            <input
+              type="radio"
+              name="colorBlindness"
+              value="protanomaly"
+              checked={colorBlindness === 'protanomaly'}
+              onChange={handleColorBlindnessChange}
+            />
+            Protanomaly (Red-Green Color Blindness)
+          </label>
+          <br />
+          <label>
+            <input
+              type="radio"
+              name="colorBlindness"
+              value="deuteranomaly"
+              checked={colorBlindness === 'deuteranomaly'}
+              onChange={handleColorBlindnessChange}
+            />
+            Deuteranomaly (Green-Red Color Blindness)
+          </label>
+          <br />
+          <label>
+            <input
+              type="radio"
+              name="colorBlindness"
+              value="tritanomaly"
+              checked={colorBlindness === 'tritanomaly'}
+              onChange={handleColorBlindnessChange}
+            />
+            Tritanomaly (Blue-Yellow Color Blindness)
+          </label>
+          <br />
+          <button type="button" onClick={toggleColorBlindFilter}>
+            Apply Color Blindness Filter
+          </button>
+        </form>
+      </div>
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>

@@ -1,6 +1,6 @@
-# React + TypeScript + Vite
+# EmpowerWeb Chrome Extension made in React, TypeScript and Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This Chrome Extension was created in order to assist those who are afflicted by impairments and disabilities that create obstacles in navigating the internet
 
 Currently, two official plugins are available:
 
