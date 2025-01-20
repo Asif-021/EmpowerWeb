@@ -1,4 +1,6 @@
 console.log("Content script loaded");
+chrome.runtime.sendMessage({ action: "contentScriptReady" });
+
 
 // Centralized magnifying glass management object
 const MagnifyingGlassManager = {
@@ -110,18 +112,25 @@ const HighContrastManager = {
   isHighContrastEnabled: false,
   isFiltersInjected: false, // Flag to track if SVG filters are already injected
 
-  toggle() {
-    if (!this.isHighContrastEnabled) {
-      if (!this.isFiltersInjected) {
-        this.injectSVGFilters(); // Inject filters only once
-        this.isFiltersInjected = true;
-      }
-      this.applyFilter('invert'); // Apply the high-contrast filter
-      this.isHighContrastEnabled = true;
-    } else {
-      this.removeFilter(); // Remove any applied filter
-      this.isHighContrastEnabled = false;
+  toggle(filterType) {
+    // if (!this.isHighContrastEnabled) {
+    //   if (!this.isFiltersInjected) {
+    //     this.injectSVGFilters(); // Inject filters only once
+    //     this.isFiltersInjected = true;
+    //   }
+    //   this.applyFilter(filterType); // Apply the high-contrast filter
+    //   this.isHighContrastEnabled = true;
+    // } else {
+    //   this.removeFilter(); // Remove any applied filter
+    //   this.isHighContrastEnabled = false;
+    // }
+    console.log(this.isFiltersInjected)
+    if (!this.isFiltersInjected) {
+      this.injectSVGFilters(); // Inject filters only once
+      this.isFiltersInjected = true;
     }
+    this.applyFilter(filterType); // Apply the high-contrast filter
+
   },
 
   injectSVGFilters() {
@@ -134,7 +143,7 @@ const HighContrastManager = {
     const svgFilters = `
         <svg id="high-contrast-filters" xmlns="http://www.w3.org/2000/svg" version="1.1" style="display: none;">
             <defs>
-                <filter id="high-contrast">
+                <filter id="increased-contrast">
                     <feComponentTransfer>
                         <feFuncR type="gamma" exponent="3" />
                         <feFuncG type="gamma" exponent="3" />
@@ -154,11 +163,23 @@ const HighContrastManager = {
                         <feFuncB type="table" tableValues="1 0" />
                     </feComponentTransfer>
                 </filter>
+                <filter id="yellow-on-black">
+                  <feComponentTransfer>
+                      <feFuncR type="gamma" amplitude="-1" exponent="3" offset="1"/>
+                      <feFuncG type="gamma" amplitude="-1" exponent="3" offset="1"/>
+                      <feFuncB type="gamma" amplitude="-1" exponent="3" offset="1"/>
+                  </feComponentTransfer>
+                  <feColorMatrix type="matrix" values="0.3 0.7 0 0 0 
+                                                      0.3 0.7 0 0 0
+                                                      0 0 0 0 0
+                                                      0 0 0 1 0"/>
+                </filter>
             </defs>
         </svg>
     `;
 
     const div = document.createElement('div');
+    div.id = 'high-contrast-filters'
     div.innerHTML = svgFilters;
     div.style.position = 'absolute';
     div.style.height = '0';
@@ -168,6 +189,10 @@ const HighContrastManager = {
   },
 
   applyFilter(filterId) {
+    if (filterId==='normal'){
+      this.removeFilter()
+      return;
+    }
     const html = document.documentElement; // Apply filter to the entire page
     html.style.filter = `url(#${filterId})`;
   },
@@ -175,7 +200,14 @@ const HighContrastManager = {
 
   removeFilter() {
       const html = document.documentElement;
+      const div = document.getElementById('high-contrast-filters')
       html.style.filter = 'none'; // Reset the filter
+      setTimeout(() => {
+        if (div) {
+            div.remove();
+        }
+    }, 100); // 100ms delay to ensure reset has occurred
+    this.isFiltersInjected = false;
   },
 
 }
@@ -258,6 +290,7 @@ const ColorBlindFilterManager = {
     `;
 
     const div = document.createElement('div');
+    div.id = 'colorblind-filters'
     div.innerHTML = svgFilters;
     div.style.position = 'absolute';
     div.style.height = '0';
@@ -285,7 +318,14 @@ const ColorBlindFilterManager = {
 
   removeFilter() {
       const html = document.documentElement;
+      const div = document.getElementById('colorblind-filters')
+      
       html.style.filter = 'none'; // Reset the filter
+      setTimeout(() => {
+        if (div) {
+            div.remove();
+        }
+    }, 100); // 100ms delay to ensure reset has occurred
   },
 }
 // Listen for messages from app.tsx
@@ -295,20 +335,63 @@ window.addEventListener("message", (event) => {
   }
 });
 
+// Class for TTS
+// const TextToSpeechManager = {
+//   startTTS(text){
+//     const lang = "en-GB";
+//     const voiceName = "Google UK English Female"; // Desired voice name
+
+//     // Create the utterance
+//     const utterance = new SpeechSynthesisUtterance(text);
+//     utterance.lang = lang;
+
+//     // Get the list of available voices
+//     const voices = window.speechSynthesis.getVoices();
+    
+//     // Find the voice that matches the desired name
+//     const selectedVoice = voices.find(voice => voice.name === voiceName);
+
+//     if (selectedVoice) {
+//       utterance.voice = selectedVoice;
+//     } else {
+//       console.warn(`Voice "${voiceName}" not found. Using default voice.`);
+//     }
+
+//     // Speak the utterance
+//     console.log(voices)
+//     window.speechSynthesis.speak(utterance);
+//   }
+// };
+
+
 // Listen for messages from the background script
 chrome.runtime.onMessage.addListener((message) => {
   console.log('CS listening...')
+  if (message.action === 'contentScriptReady') {
+    console.log('Content script is ready');
+  }
+
   // if (message.action === "toggleMagnifyingGlass") {
   //   console.log("Message received in content script", message);
   //   MagnifyingGlassManager.toggle();
   // }
+
   if (message.action === 'toggleHighContrast') {
     console.log('Toggling High Contrast Mode');
-    HighContrastManager.toggle();
+    HighContrastManager.toggle(message.filterTypeHC);
   }
 
   if (message.action === 'toggleColorBlindFilter'){
     console.log('Toggling Color Blind Filter');
-    ColorBlindFilterManager.toggle(message.filterType);
+    ColorBlindFilterManager.toggle(message.filterTypeCB);
   }
+
+  // if (message.action === 'toggleTTS'){
+  //   console.log('Message received in cs... toggling TTS');
+  //   // TextToSpeechManager.test()
+  //   sendResponse({ status: "success" });
+  //   TextToSpeechManager.startTTS(message.text);
+    
+  // }
 });
+

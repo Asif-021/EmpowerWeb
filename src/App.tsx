@@ -1,5 +1,3 @@
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 // import html2canvas from 'html2canvas';
 import './App.css'
 import { useState } from 'react'
@@ -8,8 +6,10 @@ import { useState } from 'react'
 function App() {
   const [colour, setColour] = useState<string>('');
   const [magnifyingGlassActive, setMagnifyingGlassActive] = useState<boolean>(false);
-  const [highContrastActive, setHighContrastActive] = useState<boolean>(false);
+  // const [highContrastActive, setHighContrastActive] = useState<boolean>(false);
+  const [highContrastType, setHighContrastType] = useState<string>('normal')
   const [colorBlindness, setColorBlindness] = useState<string>('normal')
+  const [textTTS, setTextTTS] = useState<string>('')
 
 
   const toggleColour = async () => {
@@ -157,20 +157,47 @@ function App() {
   const toggleHighContrast = () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0].id !== undefined) {
-        chrome.scripting.executeScript({
+        chrome.scripting.executeScript<String[], void>({
           target: { tabId: tabs[0].id },
-          func: () => {
-            chrome.runtime.sendMessage({ action: 'toggleHighContrast' });
+          args: [highContrastType],
+          func: (highContrastType) => {
+            chrome.runtime.sendMessage({ action: 'toggleHighContrast', filterTypeHC: highContrastType });
+            console.log(`Applying filter: ${highContrastType}`);
             console.log('HC message sent');
           },
         });
       }
     });
-    setHighContrastActive(!highContrastActive);
+
   }
+
+  const handleHighContrastChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setHighContrastType(event.target.value);
+  };
+
+  // function updateButtonText() {
+  //   const buttonText = document.getElementById("toggleHighContrastBtn");
   
+  //   // Change the text depending on the value of `highContrastType`
+  //   if (buttonText){
+  //     if (highContrastType === 'normal') {
+  //       buttonText.textContent = "Enable Default Contrast";
+  //     } else if (highContrastType === 'increased-contrast') {
+  //       buttonText.textContent = "Enable Increased Contrast";
+  //     } else if (highContrastType === 'grayscale'){
+  //       buttonText.textContent = "Enable Grayscale"; 
+  //     } else if (highContrastType === 'invert'){
+  //       buttonText.textContent = "Enable Inverted"; 
+  //     } else if (highContrastType === 'yellow-on-black'){
+  //       buttonText.textContent = "Enable Yellow on Black Contrast"; 
+  //     }
+  //   }
+  // }
+
    // Function to handle colorblind filter change
-   const handleColorBlindnessChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+   
+   
+  const handleColorBlindnessChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setColorBlindness(event.target.value);
   };
 
@@ -182,7 +209,7 @@ function App() {
           target: { tabId: tabs[0].id },
           args: [colorBlindness],
           func: (colorBlindness) => {
-            chrome.runtime.sendMessage({ action: 'toggleColorBlindFilter', filterType: colorBlindness });
+            chrome.runtime.sendMessage({ action: 'toggleColorBlindFilter', filterTypeCB: colorBlindness });
             console.log(`Color Blindness filter applied: ${colorBlindness}`);
           },
         });
@@ -190,95 +217,160 @@ function App() {
     });
   };
 
+  const toggleTTS = () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0].id !== undefined) {
+        chrome.scripting.executeScript<String[], void>({
+          target: { tabId: tabs[0].id },
+          args: [textTTS],
+          func: (textTTS) => {
+            chrome.runtime.sendMessage({ action: 'toggleTTS', text: textTTS });
+            console.log('TTS message sent');
+          },
+        });
+      }   
+    });
+  }
+
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
+      <h1>EmpowerWeb</h1>
       <div className="card">
         <input type="color" onChange={(e) => setColour(e.currentTarget.value)} />
         <button onClick={toggleColour}>
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
 
-      {/* Button to toggle Magnifying Glass */}
-      {/* <button onClick={toggleMagnifyingGlass1}>
-        {magnifyingGlassActive ? "Hide Magnifying Glass" : "Show Magnifying Glass"}
-      </button> */}
-
-      {/* Button to toggle Magnifying Glass */}
-      <button id="toggleMagnifyingGlassBtn" onClick={toggleMagnifyingGlass}>
-        {magnifyingGlassActive ? "Hide Magnifying Glass (Content script)" : "Show Magnifying Glass (Content Script)"}
-      </button>
-
-      <button id="toggleHighContrastBtn" onClick={toggleHighContrast}>
-        {highContrastActive ? "Disable High Contrast" : "Enable High Contrast"}
-      </button>
-      
-      <div>
-        <h3>Select Color Blindness Type:</h3>
-        <form>
-          <label>
-            <input
-              type="radio"
-              name="colorBlindness"
-              value="normal"
-              checked={colorBlindness === 'normal'}
-              onChange={handleColorBlindnessChange}
-            />
-            Normal Vision
-          </label>
-          <br />
-          <label>
-            <input
-              type="radio"
-              name="colorBlindness"
-              value="protanomaly"
-              checked={colorBlindness === 'protanomaly'}
-              onChange={handleColorBlindnessChange}
-            />
-            Protanomaly (Red-Green Color Blindness)
-          </label>
-          <br />
-          <label>
-            <input
-              type="radio"
-              name="colorBlindness"
-              value="deuteranomaly"
-              checked={colorBlindness === 'deuteranomaly'}
-              onChange={handleColorBlindnessChange}
-            />
-            Deuteranomaly (Green-Red Color Blindness)
-          </label>
-          <br />
-          <label>
-            <input
-              type="radio"
-              name="colorBlindness"
-              value="tritanomaly"
-              checked={colorBlindness === 'tritanomaly'}
-              onChange={handleColorBlindnessChange}
-            />
-            Tritanomaly (Blue-Yellow Color Blindness)
-          </label>
-          <br />
-          <button type="button" onClick={toggleColorBlindFilter}>
-            Apply Color Blindness Filter
+        {/* Button to toggle Magnifying Glass */}
+        <div className="magnifying-glass-container">
+          <button id="toggleMagnifyingGlassBtn" onClick={toggleMagnifyingGlass}>
+            {magnifyingGlassActive ? "Hide Magnifying Glass (Content script)" : "Show Magnifying Glass (Content Script)"}
           </button>
-        </form>
+        </div>
+
+        <div className="high-contrast-container">
+          <h3>Select High Contrast Type:</h3>
+          <form>
+            <label>
+              <input
+                type="radio"
+                name="highContrast"
+                value="normal"
+                checked={highContrastType === 'normal'}
+                onChange={handleHighContrastChange}
+              />
+              Normal
+            </label>
+            <br />
+            <label>
+              <input
+                type="radio"
+                name="highContrast"
+                value="increased-contrast"
+                checked={highContrastType === 'increased-contrast'}
+                onChange={handleHighContrastChange}
+              />
+              Increased Contrast
+            </label>
+            <br />
+            <label>
+              <input
+                type="radio"
+                name="highContrast"
+                value="grayscale"
+                checked={highContrastType === 'grayscale'}
+                onChange={handleHighContrastChange}
+              />
+              Greyscale
+            </label>
+            <br />
+            <label>
+              <input
+                type="radio"
+                name="highContrast"
+                value="invert"
+                checked={highContrastType === 'invert'}
+                onChange={handleHighContrastChange}
+              />
+              Inverted
+            </label>
+            <br />
+            <label>
+              <input
+                type="radio"
+                name="highContrast"
+                value="yellow-on-black"
+                checked={highContrastType === 'yellow-on-black'}
+                onChange={handleHighContrastChange}
+              />
+              Yellow on black
+            </label>
+            <br />
+            <button id="toggleHighContrastBtn" onClick={toggleHighContrast}>
+              Apply Filter
+            </button>
+          </form>
+        </div>
+        <div>
+          <h3>Select Color Blindness Type:</h3>
+          <form>
+            <label>
+              <input
+                type="radio"
+                name="colorBlindness"
+                value="normal"
+                checked={colorBlindness === 'normal'}
+                onChange={handleColorBlindnessChange}
+              />
+              Normal Vision
+            </label>
+            <br />
+            <label>
+              <input
+                type="radio"
+                name="colorBlindness"
+                value="protanomaly"
+                checked={colorBlindness === 'protanomaly'}
+                onChange={handleColorBlindnessChange}
+              />
+              Protanomaly (Red-Green Color Blindness)
+            </label>
+            <br />
+            <label>
+              <input
+                type="radio"
+                name="colorBlindness"
+                value="deuteranomaly"
+                checked={colorBlindness === 'deuteranomaly'}
+                onChange={handleColorBlindnessChange}
+              />
+              Deuteranomaly (Green-Red Color Blindness)
+            </label>
+            <br />
+            <label>
+              <input
+                type="radio"
+                name="colorBlindness"
+                value="tritanomaly"
+                checked={colorBlindness === 'tritanomaly'}
+                onChange={handleColorBlindnessChange}
+              />
+              Tritanomaly (Blue-Yellow Color Blindness)
+            </label>
+            <br />
+            <button type="button" onClick={toggleColorBlindFilter}>
+              Apply Color Blindness Filter
+            </button>
+          </form>
+        </div>
+
+        <div className="text-to-speech-container">
+          <textarea placeholder='Paste text here to be spoken' onChange={(e) => setTextTTS(e.target.value)} value={textTTS}/>
+          <button onClick={toggleTTS}>
+            Start TTS
+          </button>
+        </div>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+
     </>
   )
 }
