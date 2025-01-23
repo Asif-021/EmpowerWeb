@@ -6,6 +6,7 @@ import { useState } from 'react'
 function App() {
   const [colour, setColour] = useState<string>('');
   const [magnifyingGlassActive, setMagnifyingGlassActive] = useState<boolean>(false);
+  const [magnifyingScale, setMagnifyingScale] = useState<string>('2');
   // const [highContrastActive, setHighContrastActive] = useState<boolean>(false);
   const [highContrastType, setHighContrastType] = useState<string>('normal')
   const [colorBlindness, setColorBlindness] = useState<string>('normal')
@@ -142,10 +143,11 @@ function App() {
   const toggleMagnifyingGlass = () => { 
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0].id !== undefined) { 
-        chrome.scripting.executeScript({ 
+        chrome.scripting.executeScript<String[], void>({ 
           target: { tabId: tabs[0].id }, 
-          func: () => {
-             chrome.runtime.sendMessage({ action: 'toggleMagnifyingGlass' }); 
+          args: [magnifyingScale],
+          func: (magnifyingScale) => {
+             chrome.runtime.sendMessage({ action: 'toggleMagnifyingGlass', magnifyingScale: magnifyingScale}); 
              console.log('MG message sent');
             } 
           }); 
@@ -174,27 +176,8 @@ function App() {
   const handleHighContrastChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setHighContrastType(event.target.value);
   };
-
-  // function updateButtonText() {
-  //   const buttonText = document.getElementById("toggleHighContrastBtn");
   
-  //   // Change the text depending on the value of `highContrastType`
-  //   if (buttonText){
-  //     if (highContrastType === 'normal') {
-  //       buttonText.textContent = "Enable Default Contrast";
-  //     } else if (highContrastType === 'increased-contrast') {
-  //       buttonText.textContent = "Enable Increased Contrast";
-  //     } else if (highContrastType === 'grayscale'){
-  //       buttonText.textContent = "Enable Grayscale"; 
-  //     } else if (highContrastType === 'invert'){
-  //       buttonText.textContent = "Enable Inverted"; 
-  //     } else if (highContrastType === 'yellow-on-black'){
-  //       buttonText.textContent = "Enable Yellow on Black Contrast"; 
-  //     }
-  //   }
-  // }
-
-   // Function to handle colorblind filter change
+  // Function to handle colorblind filter change
    
    
   const handleColorBlindnessChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -242,6 +225,7 @@ function App() {
 
         {/* Button to toggle Magnifying Glass */}
         <div className="magnifying-glass-container">
+          <input type="number" min={1} value={magnifyingScale} onChange={(e) => setMagnifyingScale(e.currentTarget.value)}/>
           <button id="toggleMagnifyingGlassBtn" onClick={toggleMagnifyingGlass}>
             {magnifyingGlassActive ? "Hide Magnifying Glass (Content script)" : "Show Magnifying Glass (Content Script)"}
           </button>

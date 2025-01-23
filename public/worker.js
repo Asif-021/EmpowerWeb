@@ -1,5 +1,25 @@
 chrome.runtime.onInstalled.addListener(async () => {
   console.log("Background script loaded")
+  for (const cs of chrome.runtime.getManifest().content_scripts) {
+    for (const tab of await chrome.tabs.query({url: cs.matches})) {
+      if (tab.url.match(/(chrome|chrome-extension):\/\//gi) || tab.url.startsWith('https://chromewebstore') || tab.url.startsWith('file')) {
+        continue;
+      }
+      try {
+        const target = { tabId: tab.id, allFrames: cs.all_frames };
+        if (cs.js[0]) {
+          await chrome.scripting.executeScript({
+            files: cs.js,
+            injectImmediately: cs.run_at === 'document_start',
+            world: cs.world,
+            target,
+          });
+        }
+      } catch (err) {
+        console.error(`Failed to inject script into tab: ${tab.url}`, err);
+      }
+    }
+  }
 });
 
 let isContentScriptReady = false;
@@ -46,15 +66,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   else if (message.action === 'toggleMagnifyingGlass') {
+    console.log(message)
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]?.id !== undefined) {
-        chrome.scripting.executeScript({
-          target: { tabId: tabs[0].id },
-          func: () => {
-            // The content script will handle the magnifying glass toggle.
-            window.postMessage({ action: 'toggleMagnifyingGlass' });
-          },
+        // chrome.scripting.executeScript({
+        //   target: { tabId: tabs[0].id },
+        //   func: () => {
+        //     // The content script will handle the magnifying glass toggle.
+        //     // window.postMessage({ action: 'toggleMagnifyingGlass', magnifyingScale: message.magnifyingScale });
+            
+        //   },
+        // });
+
+        chrome.tabs.sendMessage(tabs[0].id, {action: 'toggleMagnifyingGlass', magnifyingScale: message.magnifyingScale}, (response) => {
+          if (chrome.runtime.lastError) {
+            console.error("Error sending MG message:", chrome.runtime.lastError);
+          } else{
+            console.log("MG message sent successfully:", response);
+          } 
         });
+      } else {
+        console.warn('No active tab found or invalid tab ID.')
       }
     });
   }
@@ -63,9 +95,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log('HC message received in worker', message);
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]?.id !== undefined) {
-        // Content script will handle HC toggle
-        console.log('sending HC message...')
-        chrome.tabs.sendMessage(tabs[0].id, { action: 'toggleHighContrast', filterTypeHC: message.filterTypeHC });
+        console.log('sending HC message...');
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'toggleHighContrast', filterTypeHC: message.filterTypeHC }, (response) => {
+          if (chrome.runtime.lastError) {
+            console.error('Error sending HC message:', chrome.runtime.lastError.message);
+          } else {
+            console.log('HC message sent successfully:', response);
+          }
+        });
+      } else {
+        console.warn('No active tab found or invalid tab ID.');
       }
     });
   }
@@ -74,8 +113,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log('CBF message received in worker', message);
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]?.id !== undefined) {
-        // Content script will handle CB toggle
-        chrome.tabs.sendMessage(tabs[0].id, { action: 'toggleColorBlindFilter', filterTypeCB: message.filterTypeCB });
+        console.log('sending CBF message...');
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'toggleColorBlindFilter', filterTypeCB: message.filterTypeCB }, (response) => {
+          if (chrome.runtime.lastError) {
+            console.error('Error sending CBF message:', chrome.runtime.lastError.message);
+          } else {
+            console.log('CBF message sent successfully:', response);
+          }
+        });
+      } else {
+        console.warn('No active tab found or invalid tab ID.');
       }
     });
   }
