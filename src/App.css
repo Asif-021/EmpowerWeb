@@ -5,18 +5,29 @@
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+.nav-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  overflow-x: auto;
+  border-bottom: 1px solid #dee2e6;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+
+.nav-tabs .nav-item {
+  flex: 1;
+  text-align: center;
 }
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+
+.nav-tabs .nav-link {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+.tab-content {
+  padding: 10px;
+}
+
 
 @keyframes logo-spin {
   from {
@@ -37,10 +48,6 @@
   padding: 2em;
 }
 
-.read-the-docs {
-  color: #888;
-}
-
 .mgnfng-glss {
   all: initial;
   position: fixed;
@@ -56,3 +63,4 @@
 .mgnfng-glss.hidden {
   display: none;
 }
+
