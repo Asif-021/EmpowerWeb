@@ -2,6 +2,8 @@
 import './App.css';
 import { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min';
+
 
 function App() {
   const [colour, setColour] = useState<string>('');
@@ -11,7 +13,7 @@ function App() {
   const [highContrastType, setHighContrastType] = useState<string>('normal')
   const [colorBlindness, setColorBlindness] = useState<string>('normal')
   const [textTTS, setTextTTS] = useState<string>('')
-  const [key, setKey] = useState('magnifyingGlass');
+
 
 
 
@@ -105,230 +107,91 @@ function App() {
   }
 
   return (
-    // <>
-    //   <h1>EmpowerWeb</h1>
-    //   <div className="card">
-    //     <input type="color" onChange={(e) => setColour(e.currentTarget.value)} />
-    //     <button onClick={toggleColour}>
-    //     </button>
-
-    //     {/* Button to toggle Magnifying Glass */}
-    //     <div className="magnifying-glass-container">
-    //       <input type="number" min={1} value={magnifyingScale} onChange={(e) => setMagnifyingScale(e.currentTarget.value)}/>
-    //       <button id="toggleMagnifyingGlassBtn" onClick={toggleMagnifyingGlass}>
-    //         {magnifyingGlassActive ? "Hide Magnifying Glass (Content script)" : "Show Magnifying Glass (Content Script)"}
-    //       </button>
-    //     </div>
-
-    //     <div className="high-contrast-container">
-    //       <h3>Select High Contrast Type:</h3>
-    //       <form>
-    //         <label>
-    //           <input
-    //             type="radio"
-    //             name="highContrast"
-    //             value="normal"
-    //             checked={highContrastType === 'normal'}
-    //             onChange={handleHighContrastChange}
-    //           />
-    //           Normal
-    //         </label>
-    //         <br />
-    //         <label>
-    //           <input
-    //             type="radio"
-    //             name="highContrast"
-    //             value="increased-contrast"
-    //             checked={highContrastType === 'increased-contrast'}
-    //             onChange={handleHighContrastChange}
-    //           />
-    //           Increased Contrast
-    //         </label>
-    //         <br />
-    //         <label>
-    //           <input
-    //             type="radio"
-    //             name="highContrast"
-    //             value="grayscale"
-    //             checked={highContrastType === 'grayscale'}
-    //             onChange={handleHighContrastChange}
-    //           />
-    //           Greyscale
-    //         </label>
-    //         <br />
-    //         <label>
-    //           <input
-    //             type="radio"
-    //             name="highContrast"
-    //             value="invert"
-    //             checked={highContrastType === 'invert'}
-    //             onChange={handleHighContrastChange}
-    //           />
-    //           Inverted
-    //         </label>
-    //         <br />
-    //         <label>
-    //           <input
-    //             type="radio"
-    //             name="highContrast"
-    //             value="yellow-on-black"
-    //             checked={highContrastType === 'yellow-on-black'}
-    //             onChange={handleHighContrastChange}
-    //           />
-    //           Yellow on black
-    //         </label>
-    //         <br />
-    //         <button id="toggleHighContrastBtn" onClick={toggleHighContrast}>
-    //           Apply Filter
-    //         </button>
-    //       </form>
-    //     </div>
-    //     <div>
-    //       <h3>Select Color Blindness Type:</h3>
-    //       <form>
-    //         <label>
-    //           <input
-    //             type="radio"
-    //             name="colorBlindness"
-    //             value="normal"
-    //             checked={colorBlindness === 'normal'}
-    //             onChange={handleColorBlindnessChange}
-    //           />
-    //           Normal Vision
-    //         </label>
-    //         <br />
-    //         <label>
-    //           <input
-    //             type="radio"
-    //             name="colorBlindness"
-    //             value="protanomaly"
-    //             checked={colorBlindness === 'protanomaly'}
-    //             onChange={handleColorBlindnessChange}
-    //           />
-    //           Protanomaly (Red-Green Color Blindness)
-    //         </label>
-    //         <br />
-    //         <label>
-    //           <input
-    //             type="radio"
-    //             name="colorBlindness"
-    //             value="deuteranomaly"
-    //             checked={colorBlindness === 'deuteranomaly'}
-    //             onChange={handleColorBlindnessChange}
-    //           />
-    //           Deuteranomaly (Green-Red Color Blindness)
-    //         </label>
-    //         <br />
-    //         <label>
-    //           <input
-    //             type="radio"
-    //             name="colorBlindness"
-    //             value="tritanomaly"
-    //             checked={colorBlindness === 'tritanomaly'}
-    //             onChange={handleColorBlindnessChange}
-    //           />
-    //           Tritanomaly (Blue-Yellow Color Blindness)
-    //         </label>
-    //         <br />
-    //         <button type="button" onClick={toggleColorBlindFilter}>
-    //           Apply Color Blindness Filter
-    //         </button>
-    //       </form>
-    //     </div>
-
-    //     <div className="text-to-speech-container">
-    //       <textarea placeholder='Paste text here to be spoken' onChange={(e) => setTextTTS(e.target.value)} value={textTTS}/>
-    //       <button onClick={toggleTTS}>
-    //         Start TTS
-    //       </button>
-    //     </div>
-    //   </div>
-
-    // </>
     <>
       <h1>EmpowerWeb</h1>
-      <ul className="nav nav-tabs" id="myTab" role="tablist">
-        {/* Tab Headers */}
-        <li className="nav-item" role="presentation">
-          <button
-            className={`nav-link ${key === 'magnifyingGlass' ? 'active' : ''}`}
-            id="magnifying-glass-tab"
-            data-bs-toggle="tab"
-            role="tab"
-            onClick={() => setKey('magnifyingGlass')}
+      <div className="accordion" id="accessibilityAccordion">
+        {/* Magnifying Glass */}
+        <div className="accordion-item">
+          <h2 className="accordion-header" id="magnifyingGlassHeader">
+            <button
+              className="accordion-button"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#magnifyingGlass"
+              aria-expanded="true"
+              aria-controls="magnifyingGlass"
+            >
+              Magnifying Glass
+            </button>
+          </h2>
+          <div
+            id="magnifyingGlass"
+            className="accordion-collapse collapse show"
+            aria-labelledby="magnifyingGlassHeader"
+            data-bs-parent="#accessibilityAccordion"
           >
-            Magnifying Glass
-          </button>
-        </li>
-        <li className="nav-item" role="presentation">
-          <button
-            className={`nav-link ${key === 'backgroundColor' ? 'active' : ''}`}
-            id="magnifying-glass-tab"
-            data-bs-toggle="tab"
-            role="tab"
-            onClick={() => setKey('backgroundColor')}
-          >
-            Background Colour
-          </button>
-        </li>
-        <li className="nav-item" role="presentation">
-          <button
-            className={`nav-link ${key === 'highContrast' ? 'active' : ''}`}
-            id="high-contrast-tab"
-            data-bs-toggle="tab"
-            role="tab"
-            onClick={() => setKey('highContrast')}
-          >
-            High Contrast
-          </button>
-        </li>
-        <li className="nav-item" role="presentation">
-          <button
-            className={`nav-link ${key === 'colorBlindness' ? 'active' : ''}`}
-            id="color-blindness-tab"
-            data-bs-toggle="tab"
-            role="tab"
-            onClick={() => setKey('colorBlindness')}
-          >
-            Color Blindness
-          </button>
-        </li>
-        <li className="nav-item" role="presentation">
-          <button
-            className={`nav-link ${key === 'tts' ? 'active' : ''}`}
-            id="tts-tab"
-            data-bs-toggle="tab"
-            role="tab"
-            onClick={() => setKey('tts')}
-          >
-            Text to Speech
-          </button>
-        </li>
-      </ul>
-
-      {/* Tab Content */}
-      <div className="tab-content mt-3" id="myTabContent">
-        {key === 'magnifyingGlass' && (
-          <div className="tab-pane fade show active" id="magnifying-glass" role="tabpanel">
-            <div className="magnifying-glass-container">
-              <input type="number" min={1} value={magnifyingScale} onChange={(e) => setMagnifyingScale(e.currentTarget.value)} />
-              <button id="toggleMagnifyingGlassBtn" onClick={toggleMagnifyingGlass}>
-                {magnifyingGlassActive ? 'Hide Magnifying Glass (Content script)' : 'Show Magnifying Glass (Content Script)'}
+            <div className="accordion-body">
+              <input
+                type="number"
+                min={1}
+                value={magnifyingScale}
+                onChange={(e) => setMagnifyingScale(e.currentTarget.value)}
+              />
+              <button onClick={toggleMagnifyingGlass}>
+                {magnifyingGlassActive ? 'Hide Magnifying Glass' : 'Show Magnifying Glass'}
               </button>
             </div>
           </div>
-        )}
-        {key === 'backgroundColor' && (
-          <div className="tab-pane fade show active" id="background-color" role="tabpanel">
-            <input type="color" onChange={(e) => setColour(e.currentTarget.value)} />
-            <button onClick={toggleColour}>
-            </button>
-          </div>
-        )}
+        </div>
 
-        {key === 'highContrast' && (
-          <div className="tab-pane fade show active" id="high-contrast" role="tabpanel">
-            <h3>Select High Contrast Type:</h3>
+        {/* Background Colour */}
+        <div className="accordion-item">
+          <h2 className="accordion-header" id="backgroundColorHeader">
+            <button
+              className="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#backgroundColor"
+              aria-expanded="false"
+              aria-controls="backgroundColor"
+            >
+              Background Colour
+            </button>
+          </h2>
+          <div
+            id="backgroundColor"
+            className="accordion-collapse collapse"
+            aria-labelledby="backgroundColorHeader"
+            data-bs-parent="#accessibilityAccordion"
+          >
+            <div className="accordion-body">
+              <input type="color" onChange={(e) => setColour(e.currentTarget.value)} />
+              <button onClick={toggleColour}>Apply Colour</button>
+            </div>
+          </div>
+        </div>
+
+        {/* High Contrast */}
+        <div className="accordion-item">
+          <h2 className="accordion-header" id="highContrastHeader">
+            <button
+              className="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#highContrast"
+              aria-expanded="false"
+              aria-controls="highContrast"
+            >
+              High Contrast
+            </button>
+          </h2>
+          <div
+            id="highContrast"
+            className="accordion-collapse collapse"
+            aria-labelledby="highContrastHeader"
+            data-bs-parent="#accessibilityAccordion"
+          >
+            <div className="accordion-body">
             <form>
             <label>
               <input
@@ -389,12 +252,31 @@ function App() {
               Apply Filter
             </button>
           </form>
+            </div>
           </div>
-        )}
+        </div>
 
-        {key === 'colorBlindness' && (
-          <div className="tab-pane fade show active" id="color-blindness" role="tabpanel">
-            <h3>Select Color Blindness Type:</h3>
+        {/* Color Blindness */}
+        <div className="accordion-item">
+          <h2 className="accordion-header" id="colorBlindnessHeader">
+            <button
+              className="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#colorBlindness"
+              aria-expanded="false"
+              aria-controls="colorBlindness"
+            >
+              Color Blindness
+            </button>
+          </h2>
+          <div
+            id="colorBlindness"
+            className="accordion-collapse collapse"
+            aria-labelledby="colorBlindnessHeader"
+            data-bs-parent="#accessibilityAccordion"
+          >
+            <div className="accordion-body">
             <form>
             <label>
               <input
@@ -444,12 +326,31 @@ function App() {
               Apply Color Blindness Filter
             </button>
           </form>
+            </div>
           </div>
-        )}
+        </div>
 
-        {key === 'tts' && (
-          <div className="tab-pane fade show active" id="tts" role="tabpanel">
-            <div className="text-to-speech-container">
+        {/* Text-to-Speech */}
+        <div className="accordion-item">
+          <h2 className="accordion-header" id="ttsHeader">
+            <button
+              className="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#tts"
+              aria-expanded="false"
+              aria-controls="tts"
+            >
+              Text to Speech
+            </button>
+          </h2>
+          <div
+            id="tts"
+            className="accordion-collapse collapse"
+            aria-labelledby="ttsHeader"
+            data-bs-parent="#accessibilityAccordion"
+          >
+            <div className="accordion-body">
               <textarea
                 placeholder="Paste text here to be spoken"
                 onChange={(e) => setTextTTS(e.target.value)}
@@ -458,7 +359,7 @@ function App() {
               <button onClick={toggleTTS}>Start TTS</button>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </>
   )

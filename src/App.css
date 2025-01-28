@@ -5,29 +5,19 @@
   text-align: center;
 }
 
-.nav-tabs {
+
+
+.accordion{
+  min-width: 270px;
+  max-width: 400px;
+  width: 100%;
+}
+
+.accordion-item {
   display: flex;
-  flex-wrap: nowrap;
-  justify-content: space-between;
-  overflow-x: auto;
-  border-bottom: 1px solid #dee2e6;
+  flex-direction: column;
+  width: 100%;
 }
-
-.nav-tabs .nav-item {
-  flex: 1;
-  text-align: center;
-}
-
-.nav-tabs .nav-link {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.tab-content {
-  padding: 10px;
-}
-
 
 @keyframes logo-spin {
   from {
