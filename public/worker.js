@@ -69,16 +69,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log(message)
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]?.id !== undefined) {
-        // chrome.scripting.executeScript({
-        //   target: { tabId: tabs[0].id },
-        //   func: () => {
-        //     // The content script will handle the magnifying glass toggle.
-        //     // window.postMessage({ action: 'toggleMagnifyingGlass', magnifyingScale: message.magnifyingScale });
-            
-        //   },
-        // });
-
-        chrome.tabs.sendMessage(tabs[0].id, {action: 'toggleMagnifyingGlass', magnifyingScale: message.magnifyingScale}, (response) => {
+        chrome.tabs.sendMessage(tabs[0].id, {action: 'toggleMagnifyingGlass', magnifyingScale: message.magnifyingScale, 
+                                              magnifyingSize: message.magnifyingSize, isRectangle: message.isRectangle,
+                                              magnifyingHeight: message.magnifyingHeight, magnifyingWidth: message.magnifyingWidth}, (response) => {
           if (chrome.runtime.lastError) {
             console.error("Error sending MG message:", chrome.runtime.lastError);
           } else{
@@ -151,8 +144,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
-  else if (message.action === "toggleTTS") {
+  else if (message.action === "startTTS") {
     console.log("TTS message received in service worker:", message.text);
+
+    chrome.tts.getVoices((voices) => {
+      console.log("Available voices:", voices);
+    });
+
+    
 
     chrome.tts.speak(message.text, {
       rate: 1.0,
@@ -169,6 +168,38 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse({ status: "TTS started using chrome.tts" });
     return true; // Indicate async response
   }
+
+  else if(message.action === 'pauseTTS'){
+    try{
+      chrome.tts.pause();
+      sendResponse({ status: "TTS paused using chrome.tts" });
+      return true; 
+    }
+    catch(e){
+      console.error("Error pausing TTS:", e);
+    }
+  }
+
+  else if(message.action === 'resumeTTS'){
+    try{
+      chrome.tts.resume();
+      sendResponse({ status: "TTS resumed using chrome.tts" });
+      return true; 
+    }
+    catch(e){
+      console.error("Error resuming TTS:", e);
+    }
+  }
+  else if(message.action === 'stopTTS'){
+    try{
+      chrome.tts.stop();
+      sendResponse({ status: "TTS stopped using chrome.tts" });
+      return true;
+      }
+      catch(e){
+        console.error("Error stopping TTS:", e);
+        }
+    }
 
   else{
     console.log('Message not understood: ', message)

@@ -9,7 +9,10 @@ function App() {
   const [colour, setColour] = useState<string>('');
   const [magnifyingGlassActive, setMagnifyingGlassActive] = useState<boolean>(false);
   const [magnifyingScale, setMagnifyingScale] = useState<string>('2');
-  // const [highContrastActive, setHighContrastActive] = useState<boolean>(false);
+  const [magnifyingSize, setMagnifyingSize] = useState<string>('200');
+  const [magnifyingHeight, setMagnifyingHeight] = useState('200');
+  const [magnifyingWidth, setMagnifyingWidth] = useState('200');
+  const [isRectangle, setIsRectangle] = useState<boolean>(false);
   const [highContrastType, setHighContrastType] = useState<string>('normal')
   const [colorBlindness, setColorBlindness] = useState<string>('normal')
   const [textTTS, setTextTTS] = useState<string>('')
@@ -34,11 +37,13 @@ function App() {
   const toggleMagnifyingGlass = () => { 
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0].id !== undefined) { 
-        chrome.scripting.executeScript<String[], void>({ 
+        chrome.scripting.executeScript<[String, String, boolean, String, String], void>({ 
           target: { tabId: tabs[0].id }, 
-          args: [magnifyingScale],
-          func: (magnifyingScale) => {
-             chrome.runtime.sendMessage({ action: 'toggleMagnifyingGlass', magnifyingScale: magnifyingScale}); 
+          args: [magnifyingScale, magnifyingSize, isRectangle, magnifyingHeight, magnifyingWidth],
+          func: (magnifyingScale, magnifyingSize, isRectangle, magnifyingHeight, magnifyingWidth) => {
+             chrome.runtime.sendMessage({ action: 'toggleMagnifyingGlass', magnifyingScale: magnifyingScale, 
+                                          magnifyingSize: magnifyingSize, isRectangle:isRectangle,
+                                          magnifyingHeight: magnifyingHeight, magnifyingWidth: magnifyingWidth}); 
              console.log('MG message sent');
             } 
           }); 
@@ -91,15 +96,31 @@ function App() {
     });
   };
 
-  const toggleTTS = () => {
+  const handleTTS = (interrupt: String) => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0].id !== undefined) {
         chrome.scripting.executeScript<String[], void>({
           target: { tabId: tabs[0].id },
-          args: [textTTS],
-          func: (textTTS) => {
-            chrome.runtime.sendMessage({ action: 'toggleTTS', text: textTTS });
+          args: [textTTS, interrupt],
+          func: (textTTS, interrupt) => {
+            // chrome.runtime.sendMessage({ action: 'startTTS', text: textTTS });
+            // console.log('TTS message sent');
+            if(interrupt==='start'){
+            chrome.runtime.sendMessage({ action: 'startTTS', text: textTTS });
             console.log('TTS message sent');
+            }
+            else if(interrupt==='pause'){
+              chrome.runtime.sendMessage({ action: 'pauseTTS'});
+              console.log('Pause TTS message sent');
+            }
+            else if(interrupt==='resume'){
+              chrome.runtime.sendMessage({ action: 'resumeTTS'});
+              console.log('Resume TTS message sent');
+            }
+            else if(interrupt==='stop'){
+              chrome.runtime.sendMessage({ action: 'stopTTS'});
+              console.log('Stop TTS message sent');
+            }
           },
         });
       }   
@@ -131,12 +152,59 @@ function App() {
             data-bs-parent="#accessibilityAccordion"
           >
             <div className="accordion-body">
+            <div className="form-check form-switch d-flex justify-content-between">
+                <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Rectangular Shape</label>
+                <input className="form-check-input" type="checkbox" checked={isRectangle} onChange={() => setIsRectangle(!isRectangle)} role="switch" id="flexSwitchCheckDefault"/>
+              </div>
+              {!isRectangle ? (
+            <label htmlFor="magnifyingSize" id='magnifyingSizeContainer'>
+                Size:
               <input
+                id='magnifyingSize'
+                type="number"
+                min={100}
+                value={magnifyingSize}
+                onChange={(e) => setMagnifyingSize(e.currentTarget.value)}
+              />
+              px
+              </label>
+              ):(
+                <>
+                <label htmlFor="magnifyingHeight" id='magnifyingHeightContainer'>
+                  Height:
+                  <input
+                    id='magnifyingHeight'
+                    type="number"
+                    min={100}
+                    value={magnifyingHeight}
+                    onChange={(e) => setMagnifyingHeight(e.currentTarget.value)}
+                  />
+                  px
+                </label>
+                <label htmlFor="magnifyingWidth" id='magnifyingWidthContainer'>
+                  Width:
+                  <input
+                    id='magnifyingWidth'
+                    type="number"
+                    min={100}
+                    value={magnifyingWidth}
+                    onChange={(e) => setMagnifyingWidth(e.currentTarget.value)}
+                  />
+                  px
+                </label>
+                </>
+              )}
+              <label id='magnifyingScaleContainer'>
+                Zoom:
+              <input
+                id='magnifyingScale'
                 type="number"
                 min={1}
                 value={magnifyingScale}
                 onChange={(e) => setMagnifyingScale(e.currentTarget.value)}
               />
+              x
+              </label>
               <button onClick={toggleMagnifyingGlass}>
                 {magnifyingGlassActive ? 'Hide Magnifying Glass' : 'Show Magnifying Glass'}
               </button>
@@ -356,7 +424,10 @@ function App() {
                 onChange={(e) => setTextTTS(e.target.value)}
                 value={textTTS}
               />
-              <button onClick={toggleTTS}>Start TTS</button>
+              <button onClick={() => handleTTS("start")}>Start TTS</button>
+              <button onClick={() => handleTTS("pause")}>Pause</button>
+              <button onClick={() => handleTTS("resume")}>Resume</button>
+              <button onClick={() => handleTTS("stop")}>Stop</button>
             </div>
           </div>
         </div>

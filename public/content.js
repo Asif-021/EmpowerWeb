@@ -10,9 +10,12 @@ const MagnifyingGlassManager = {
   glassClass: "mgnfng-glss", // Class for the magnifying glass
   position: { x: 0, y: 0 }, // Initial position of the magnifying glass
   imageData: "",
+  height: 200,
+  width:200,
+  isRectangle: false,
 
   // Toggles the magnifying glass
-  toggle(magnifyingScale) {
+  toggle(magnifyingScale, magnifyingSize, isRectangle, magnifyingHeight, magnifyingWidth) {
 
     const existingDiv = document.querySelector(`.${this.glassClass}`);
     if (existingDiv) {
@@ -20,7 +23,15 @@ const MagnifyingGlassManager = {
 
     } else {
       this.scale = Number(magnifyingScale);
-      console.log('scale is now ', magnifyingScale);
+      this.size = Number(magnifyingSize);
+      this.height = Number(magnifyingHeight);
+      this.width = Number(magnifyingWidth);
+      this.isRectangle = isRectangle;
+      // console.log('scale is now ', magnifyingScale);
+      // console.log('size is now ', magnifyingSize);
+      console.log('isRectangle is now ', this.isRectangle);
+      console.log('Height is now ', this.height);
+      console.log('Width is now ', this.width);
       this.create();
     }
   },
@@ -28,11 +39,18 @@ const MagnifyingGlassManager = {
   create() {
     console.log("Creating magnifying glass...");
     const div = document.createElement("div");
-    div.classList.add(this.glassClass, "rounded-circle", "shadow");
+    div.classList.add(this.glassClass, "rounded-0", "shadow");
     div.style.position = "absolute";
-    div.style.width = `${this.size}px`;
-    div.style.height = `${this.size}px`;
-    div.style.borderRadius = "50%";
+    if (!this.isRectangle){
+      div.style.width = `${this.size}px`;
+      div.style.height = `${this.size}px`;
+      div.style.borderRadius = "50%";
+    }
+    else{
+      div.style.width = `${this.width}px`;
+      div.style.height = `${this.height}px`;
+      div.style.borderRadius = "0";
+    }
     div.style.overflow = "hidden";
     div.style.border = "2px solid rgba(0, 0, 0, 0.2)";
     div.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.3)";
@@ -66,7 +84,7 @@ const MagnifyingGlassManager = {
       if (response && response.imageData) {
         this.imageData = response.imageData;
 
-        console.log("Captured image data:", this.imageData);
+        // console.log("Captured image data:", this.imageData);
 
         // Set the background for the magnifying glass
         div.style.backgroundImage = `url(${this.imageData})`;
@@ -87,7 +105,6 @@ const MagnifyingGlassManager = {
       const { clientX: x, clientY: y } = event;
       this.position = { x, y };
       const adjustedSize = this.size * dpr
-      console.log('new size:', this.size)
 
       const hs = this.size/2
       div.style.left = `${x - hs}px`;
@@ -488,7 +505,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message.action === "toggleMagnifyingGlass") {
     console.log("MG message received in content script", message);
-    MagnifyingGlassManager.toggle(message.magnifyingScale);
+    MagnifyingGlassManager.toggle(message.magnifyingScale, message.magnifyingSize, 
+                                  message.isRectangle, message.magnifyingHeight, message.magnifyingWidth);
     sendResponse({ success: true });
     return true;
   }

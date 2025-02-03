@@ -8,7 +8,7 @@
 
 
 .accordion{
-  min-width: 270px;
+  min-width: 280px;
   max-width: 400px;
   width: 100%;
 }
@@ -17,6 +17,11 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+}
+
+#magnifyingScaleContainer{
+  display: flex;
+  flex-direction: row;
 }
 
 @keyframes logo-spin {
@@ -50,6 +55,13 @@
   box-shadow: 0 0 0 1px #fff, 0 0 0 2px #ccc, 0 0 0 4px #fff;
   filter: drop-shadow(0 0 5px #ccc);
 }
+
+.mgnfng-glss.rectangular {
+  border-radius: 0;
+  width: 150px; 
+  height: 100px; 
+}
+
 .mgnfng-glss.hidden {
   display: none;
 }
