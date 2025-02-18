@@ -1,6 +1,6 @@
 // import html2canvas from 'html2canvas';
 import './App.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 
@@ -8,16 +8,36 @@ import 'bootstrap/dist/js/bootstrap.bundle.min';
 function App() {
   const [colour, setColour] = useState<string>('');
   const [magnifyingGlassActive, setMagnifyingGlassActive] = useState<boolean>(false);
-  const [magnifyingScale, setMagnifyingScale] = useState<string>('2');
-  const [magnifyingSize, setMagnifyingSize] = useState<string>('200');
-  const [magnifyingHeight, setMagnifyingHeight] = useState('200');
-  const [magnifyingWidth, setMagnifyingWidth] = useState('200');
-  const [isRectangle, setIsRectangle] = useState<boolean>(false);
+  const [magnifyingScale, setMagnifyingScale] = useState<string>(
+    () => JSON.parse(localStorage.getItem('magnifyingGlassPreferences') || '{}').magnifyingScale || '2'
+  );
+  const [magnifyingSize, setMagnifyingSize] = useState<string>(
+    () => JSON.parse(localStorage.getItem('magnifyingGlassPreferences') || '{}').magnifyingSize || '200'
+  );
+  const [magnifyingHeight, setMagnifyingHeight] = useState<string>(
+    () => JSON.parse(localStorage.getItem('magnifyingGlassPreferences') || '{}').magnifyingHeight || '200'
+  );
+  const [magnifyingWidth, setMagnifyingWidth] = useState<string>(
+    () => JSON.parse(localStorage.getItem('magnifyingGlassPreferences') || '{}').magnifyingWidth || '400'
+  );
+  const [isRectangle, setIsRectangle] = useState<boolean>(
+    () => JSON.parse(localStorage.getItem('magnifyingGlassPreferences') || '{}').isRectangle || false
+  );
   const [highContrastType, setHighContrastType] = useState<string>('normal')
   const [colorBlindness, setColorBlindness] = useState<string>('normal')
   const [textTTS, setTextTTS] = useState<string>('')
 
-
+  useEffect(() => {
+    const saved = localStorage.getItem('magnifyingGlassPreferences');
+    if (saved) {
+      const preferences = JSON.parse(saved);
+      setMagnifyingScale(preferences.magnifyingScale);
+      setMagnifyingSize(preferences.magnifyingSize);
+      setIsRectangle(preferences.isRectangle);
+      setMagnifyingHeight(preferences.magnifyingHeight);
+      setMagnifyingWidth(preferences.magnifyingWidth);
+    }
+  }, []);
 
 
   const toggleColour = async () => {
@@ -50,7 +70,14 @@ function App() {
         } 
       });
     setMagnifyingGlassActive(!magnifyingGlassActive);
-    };
+    localStorage.setItem('magnifyingGlassPreferences', JSON.stringify({
+      magnifyingScale: magnifyingScale,
+      magnifyingSize: magnifyingSize,
+      isRectangle: isRectangle,
+      magnifyingHeight: magnifyingHeight,
+      magnifyingWidth: magnifyingWidth,
+    }))
+  };
 
   const toggleHighContrast = () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -103,8 +130,6 @@ function App() {
           target: { tabId: tabs[0].id },
           args: [textTTS, interrupt],
           func: (textTTS, interrupt) => {
-            // chrome.runtime.sendMessage({ action: 'startTTS', text: textTTS });
-            // console.log('TTS message sent');
             if(interrupt==='start'){
             chrome.runtime.sendMessage({ action: 'startTTS', text: textTTS });
             console.log('TTS message sent');

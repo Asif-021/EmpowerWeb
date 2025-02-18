@@ -126,7 +126,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (tabs.length > 0) {
         const tabId = tabs[0].id;
         // Capture the visible tab of the current window
-        chrome.tabs.captureVisibleTab({ format: "png" }, (imageData) => {
+        chrome.tabs.captureVisibleTab({ format: "jpeg" }, (imageData) => {
           if (chrome.runtime.lastError) {
             console.error("Error capturing tab:", chrome.runtime.lastError);
             sendResponse({ error: chrome.runtime.lastError });

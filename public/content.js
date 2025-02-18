@@ -65,6 +65,7 @@ const MagnifyingGlassManager = {
     // Add mousemove listener to move the magnifying glass
     document.addEventListener("mousemove", this.move.bind(this));
     document.addEventListener("click", this.onClick.bind(this));
+    document.addEventListener("scroll", this.onScroll.bind(this));
   },
 
   // Sets up the background image of the magnifying glass based on the entire page
@@ -88,9 +89,12 @@ const MagnifyingGlassManager = {
 
         // Set the background for the magnifying glass
         div.style.backgroundImage = `url(${this.imageData})`;
-        div.style.backgroundSize = `${window.innerWidth * this.scale}px ${window.innerHeight * this.scale}px`;
+        // div.style.backgroundSize = `${window.innerWidth * this.scale}px ${window.innerHeight * this.scale}px`;
+        // div.style.backgroundSize = `${window.innerWidth * this.scale * window.devicePixelRatio}px 
+        //                             ${window.innerHeight * this.scale * window.devicePixelRatio}px`;
         div.style.backgroundRepeat = "no-repeat";
         div.style.backgroundAttachment = "fixed";
+        div.style.scale = 1;
       }
     } catch (error) {
       console.error("Error setting up background:", error);
@@ -104,16 +108,29 @@ const MagnifyingGlassManager = {
     if (div) {
       const { clientX: x, clientY: y } = event;
       this.position = { x, y };
-      const adjustedSize = this.size * dpr
+      
 
-      const hs = this.size/2
-      div.style.left = `${x - hs}px`;
-      div.style.top = `${y - hs}px`;
-      div.style.backgroundPosition = `-${(x * this.scale) - this.size / 2}px -${(y * this.scale) - this.size / 2}px`;
+      const halfWidth = this.isRectangle ? this.width / 2 : this.size / 2;
+      const halfHeight = this.isRectangle ? this.height / 2 : this.size / 2;
+
+      // Position the magnifying glass centered around the cursor
+      div.style.left = `${x - halfWidth}px`;
+      div.style.top = `${y - halfHeight}px`;
+
+      // div.style.backgroundPosition = `-${(x * this.scale) - this.size / 2}px -${(y * this.scale) - this.size / 2}px`;
+      // div.style.backgroundPosition = `-${(x * this.scale * dpr) - (this.size / 2)}px -${(y * this.scale * dpr) - (this.size / 2)}px`;
+      div.style.backgroundPosition = (halfWidth - x * devicePixelRatio) + 'px ' + (halfHeight - y * devicePixelRatio) + 'px';
     }
   },
 
   onClick() {
+    const existingDiv = document.querySelector(`.${this.glassClass}`);
+    if (existingDiv) {
+      this.remove(existingDiv);
+    }
+  },
+
+  onScroll(){
     const existingDiv = document.querySelector(`.${this.glassClass}`);
     if (existingDiv) {
       this.remove(existingDiv);
@@ -127,6 +144,8 @@ const MagnifyingGlassManager = {
     existingDiv.remove();
     document.removeEventListener("mousemove", this.move.bind(this));
     document.removeEventListener("click", this.onClick.bind(this));
+    document.removeEventListener("scroll", this.onScroll.bind(this));
+
   },
 };
 // MGManager END
