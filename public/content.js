@@ -84,7 +84,7 @@ const MagnifyingGlassManager = {
 
       if (response && response.imageData) {
         this.imageData = response.imageData;
-
+        
         // console.log("Captured image data:", this.imageData);
 
         // Set the background for the magnifying glass
@@ -92,9 +92,10 @@ const MagnifyingGlassManager = {
         // div.style.backgroundSize = `${window.innerWidth * this.scale}px ${window.innerHeight * this.scale}px`;
         // div.style.backgroundSize = `${window.innerWidth * this.scale * window.devicePixelRatio}px 
         //                             ${window.innerHeight * this.scale * window.devicePixelRatio}px`;
+        // div.style.backgroundSize = `${window.innerWidth * this.scale}px ${window.innerHeight * this.scale}px`;  // Zoom effect
         div.style.backgroundRepeat = "no-repeat";
-        div.style.backgroundAttachment = "fixed";
-        div.style.scale = 1;
+        // div.style.backgroundAttachment = "fixed";
+        div.style.scale = this.scale/devicePixelRatio;
       }
     } catch (error) {
       console.error("Error setting up background:", error);
@@ -112,14 +113,26 @@ const MagnifyingGlassManager = {
 
       const halfWidth = this.isRectangle ? this.width / 2 : this.size / 2;
       const halfHeight = this.isRectangle ? this.height / 2 : this.size / 2;
+      const scrollX = window.scrollX || 0;
+      const scrollY = window.scrollY || 0;
+      const dpr = window.devicePixelRatio || 1;
+
 
       // Position the magnifying glass centered around the cursor
+      // div.style.left = `${x / dpr - halfWidth}px`;
+      // div.style.top = `${y / dpr - halfHeight}px`;
       div.style.left = `${x - halfWidth}px`;
       div.style.top = `${y - halfHeight}px`;
+
+      
+      // Adjust the background position so the zoomed area aligns with the crosshair
+      // div.style.backgroundPosition = `-${(x + scrollX) * this.scale * dpr - halfWidth}px -${(y + scrollY) * this.scale * dpr - halfHeight}px`;
 
       // div.style.backgroundPosition = `-${(x * this.scale) - this.size / 2}px -${(y * this.scale) - this.size / 2}px`;
       // div.style.backgroundPosition = `-${(x * this.scale * dpr) - (this.size / 2)}px -${(y * this.scale * dpr) - (this.size / 2)}px`;
       div.style.backgroundPosition = (halfWidth - x * devicePixelRatio) + 'px ' + (halfHeight - y * devicePixelRatio) + 'px';
+      // div.style.backgroundPosition = `-${(x + scrollX) * this.scale - halfWidth}px -${(y + scrollY) * this.scale - halfHeight}px`;
+
     }
   },
 
