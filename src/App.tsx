@@ -146,6 +146,10 @@ function App() {
               chrome.runtime.sendMessage({ action: 'stopTTS'});
               console.log('Stop TTS message sent');
             }
+            else if(interrupt==='clear'){
+              chrome.runtime.sendMessage({ action: 'stopTTS' });
+              console.log('Clear TTS and stop message sent');
+            }
           },
         });
       }   
@@ -176,28 +180,31 @@ function App() {
             aria-labelledby="magnifyingGlassHeader"
             data-bs-parent="#accessibilityAccordion"
           >
-            <div className="accordion-body">
-            <div className="form-check form-switch d-flex justify-content-between">
+            <div className="accordion-body d-flex flex-column">
+              <div className="form-check form-switch d-flex justify-content-between ps-0">
                 <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Rectangular Shape</label>
                 <input className="form-check-input" type="checkbox" checked={isRectangle} onChange={() => setIsRectangle(!isRectangle)} role="switch" id="flexSwitchCheckDefault"/>
               </div>
               {!isRectangle ? (
-            <label htmlFor="magnifyingSize" id='magnifyingSizeContainer'>
-                Size:
-              <input
-                id='magnifyingSize'
-                type="number"
-                min={100}
-                value={magnifyingSize}
-                onChange={(e) => setMagnifyingSize(e.currentTarget.value)}
-              />
-              px
-              </label>
+                <label className="input-label" htmlFor="magnifyingSize" id='magnifyingSizeContainer'>
+                  Size:
+                <input
+                  className="w-50"
+                  style={{margin:"0 0.1rem"}}
+                  id='magnifyingSize'
+                  type="number"
+                  min={100}
+                  value={magnifyingSize}
+                  onChange={(e) => setMagnifyingSize(e.currentTarget.value)}
+                />
+                px
+                </label>
               ):(
                 <>
-                <label htmlFor="magnifyingHeight" id='magnifyingHeightContainer'>
+                <label className="input-label" htmlFor="magnifyingHeight" id='magnifyingHeightContainer'>
                   Height:
                   <input
+                    style={{width: "50%", margin:"0 0.1rem"}}
                     id='magnifyingHeight'
                     type="number"
                     min={100}
@@ -206,9 +213,10 @@ function App() {
                   />
                   px
                 </label>
-                <label htmlFor="magnifyingWidth" id='magnifyingWidthContainer'>
+                <label className="input-label" htmlFor="magnifyingWidth" id='magnifyingWidthContainer'>
                   Width:
                   <input
+                    style={{width: "50%", margin:"0 0.1rem"}}
                     id='magnifyingWidth'
                     type="number"
                     min={100}
@@ -219,9 +227,11 @@ function App() {
                 </label>
                 </>
               )}
-              <label id='magnifyingScaleContainer'>
+              <label className="input-label scale" id='magnifyingScaleContainer'>
                 Zoom:
               <input
+                className="w-50"
+                style={{margin:"0 0.1rem"}}
                 id='magnifyingScale'
                 type="number"
                 min={1}
@@ -445,7 +455,9 @@ function App() {
           >
             <div className="accordion-body">
               <textarea
+                id = "textareaTTS"
                 placeholder="Paste text here to be spoken"
+                spellCheck="false"
                 onChange={(e) => setTextTTS(e.target.value)}
                 value={textTTS}
               />
@@ -453,6 +465,9 @@ function App() {
               <button onClick={() => handleTTS("pause")}>Pause</button>
               <button onClick={() => handleTTS("resume")}>Resume</button>
               <button onClick={() => handleTTS("stop")}>Stop</button>
+              <button onClick={() => {handleTTS("clear");
+                                      setTextTTS("");}
+              }>Clear</button>
             </div>
           </div>
         </div>

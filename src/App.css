@@ -5,7 +5,13 @@
   text-align: center;
 }
 
-
+input{
+  background-color: transparent;
+  box-shadow: none;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  color: black;
+}
 
 .accordion{
   min-width: 280px;
@@ -66,3 +72,16 @@
   display: none;
 }
 
+.input-label{
+  display: flex;
+  align-items: center;
+  margin-top: 0.2rem;
+}
+
+.scale{
+  margin-bottom: 0.2rem;
+}
+
+.rectangle-container{
+
+}
