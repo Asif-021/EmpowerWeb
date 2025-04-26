@@ -17,6 +17,15 @@
             "run_at": "document_idle"
         } 
     ],
+    "commands": {
+        "toggle-magnifying-glass": {
+            "suggested_key": {
+            "default": "Ctrl+Shift+1",
+            "mac": "Command+Shift+1"
+            },
+            "description": "Toggle Magnifying Glass"
+        }
+        },
     "action": {
         "default_popup": "/index.html"
     },
@@ -24,7 +33,8 @@
         "scripting",
         "activeTab",
         "tabs",
-        "tts"
+        "tts",
+        "storage"
     ],
     "host_permissions": [
         "http://*/*",

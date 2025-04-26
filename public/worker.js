@@ -24,39 +24,16 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 let isContentScriptReady = false;
 
-// function sendMessageToContentScript(tabId, message, retries = 5) {
-//   if (retries <= 0) {
-//     console.error("Failed to send message to content script after multiple attempts.");
-//     return;
-//   }
+//Keyboard shortcut handling
+chrome.commands.onCommand.addListener((command) => {
+  if (command === "toggle-magnifying-glass") {
+    console.log("MG Shortcut Identified")
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.tabs.sendMessage(tabs[0].id, { action: "toggleMagnifyingGlassShortcut" });
+    });
+  }
+});
 
-//   chrome.tabs.sendMessage(tabId, message, (response) => {
-//     if (chrome.runtime.lastError || !response) {
-//       console.warn("Content script not ready. Retrying...");
-//       setTimeout(() => sendMessageToContentScript(tabId, message, retries - 1), 200);
-//     } else {
-//       console.log("Message successfully sent to content script:", response);
-//     }
-//   });
-// }
-
-
-// function ensureContentScriptInjected(tabId, callback) {
-//   chrome.scripting.executeScript(
-//     {
-//       target: { tabId: tabId },
-//       files: ["/content.js"], 
-//     },
-//     () => {
-//       if (chrome.runtime.lastError) {
-//         console.error("Failed to inject content script:", chrome.runtime.lastError);
-//       } else {
-//         console.log("Content script successfully injected into tab:", tabId);
-//         if (callback) callback();
-//       }
-//     }
-//   );
-// }
 
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -154,7 +131,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     
 
     chrome.tts.speak(message.text, {
-      rate: 1.0,
+      rate: Number(message.rate),
       pitch: 1.0,
       volume: 1.0,
       onEvent: (event) => {

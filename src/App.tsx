@@ -7,6 +7,8 @@ import 'bootstrap/dist/js/bootstrap.bundle.min';
 
 function App() {
   const [colour, setColour] = useState<string>('');
+  const [highContrastType, setHighContrastType] = useState<string>('normal')
+  const [colorBlindness, setColorBlindness] = useState<string>('normal')
   const [magnifyingGlassActive, setMagnifyingGlassActive] = useState<boolean>(false);
   const [magnifyingScale, setMagnifyingScale] = useState<string>(
     () => JSON.parse(localStorage.getItem('magnifyingGlassPreferences') || '{}').magnifyingScale || '2'
@@ -23,9 +25,12 @@ function App() {
   const [isRectangle, setIsRectangle] = useState<boolean>(
     () => JSON.parse(localStorage.getItem('magnifyingGlassPreferences') || '{}').isRectangle || false
   );
-  const [highContrastType, setHighContrastType] = useState<string>('normal')
-  const [colorBlindness, setColorBlindness] = useState<string>('normal')
-  const [textTTS, setTextTTS] = useState<string>('')
+  const [textTTS, setTextTTS] = useState<string>(
+    () => JSON.parse(localStorage.getItem('textToSpeechPreferences') || '{}').textTTS || ''
+  )
+  const [rateTTS, setRateTTS] = useState<string>(
+    () => JSON.parse(localStorage.getItem('textToSpeechPreferences') || '{}').rateTTS || '1.0'
+  )
 
   useEffect(() => {
     const saved = localStorage.getItem('magnifyingGlassPreferences');
@@ -128,10 +133,10 @@ function App() {
       if (tabs[0].id !== undefined) {
         chrome.scripting.executeScript<String[], void>({
           target: { tabId: tabs[0].id },
-          args: [textTTS, interrupt],
-          func: (textTTS, interrupt) => {
+          args: [textTTS, interrupt, rateTTS],
+          func: (textTTS, interrupt, rateTTS) => {
             if(interrupt==='start'){
-            chrome.runtime.sendMessage({ action: 'startTTS', text: textTTS });
+            chrome.runtime.sendMessage({ action: 'startTTS', text: textTTS, rate: rateTTS });
             console.log('TTS message sent');
             }
             else if(interrupt==='pause'){
@@ -154,6 +159,10 @@ function App() {
         });
       }   
     });
+    localStorage.setItem('textToSpeechPreferences', JSON.stringify({
+      textTTS: textTTS,
+      rateTTS: rateTTS
+    }))
   }
 
   return (
@@ -181,10 +190,18 @@ function App() {
             data-bs-parent="#accessibilityAccordion"
           >
             <div className="accordion-body d-flex flex-column">
-              <div className="form-check form-switch d-flex justify-content-between ps-0">
-                <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Rectangular Shape</label>
-                <input className="form-check-input" type="checkbox" checked={isRectangle} onChange={() => setIsRectangle(!isRectangle)} role="switch" id="flexSwitchCheckDefault"/>
+              <div className="form-check form-switch d-flex mb-0 ps-0">
+                <label className="form-check-label mb-0" htmlFor="flexSwitchCheckDefault">Rectangular Shape</label>
+                <input
+                  className="form-check-input ms-3"
+                  type="checkbox"
+                  checked={isRectangle}
+                  onChange={() => setIsRectangle(!isRectangle)}
+                  role="switch"
+                  id="flexSwitchCheckDefault"
+                />
               </div>
+
               {!isRectangle ? (
                 <label className="input-label" htmlFor="magnifyingSize" id='magnifyingSizeContainer'>
                   Size:
@@ -240,7 +257,7 @@ function App() {
               />
               x
               </label>
-              <button onClick={toggleMagnifyingGlass}>
+              <button className="btn btn-primary mt-2 align-self-center width-fit-content" onClick={toggleMagnifyingGlass}>
                 {magnifyingGlassActive ? 'Hide Magnifying Glass' : 'Show Magnifying Glass'}
               </button>
             </div>
@@ -267,9 +284,10 @@ function App() {
             aria-labelledby="backgroundColorHeader"
             data-bs-parent="#accessibilityAccordion"
           >
-            <div className="accordion-body">
-              <input type="color" onChange={(e) => setColour(e.currentTarget.value)} />
-              <button onClick={toggleColour}>Apply Colour</button>
+            <div className="accordion-body d-flex flex-column align-items-center">
+              Select Colour:
+              <input className="mt-2 mb-2" type="color" onChange={(e) => setColour(e.currentTarget.value)} />
+              <button className="btn btn-primary" onClick={toggleColour}>Apply Colour</button>
             </div>
           </div>
         </div>
@@ -294,67 +312,66 @@ function App() {
             aria-labelledby="highContrastHeader"
             data-bs-parent="#accessibilityAccordion"
           >
-            <div className="accordion-body">
-            <form>
-            <label>
-              <input
-                type="radio"
-                name="highContrast"
-                value="normal"
-                checked={highContrastType === 'normal'}
-                onChange={handleHighContrastChange}
-              />
-              Normal
-            </label>
-            <br />
-            <label>
-              <input
-                type="radio"
-                name="highContrast"
-                value="increased-contrast"
-                checked={highContrastType === 'increased-contrast'}
-                onChange={handleHighContrastChange}
-              />
-              Increased Contrast
-            </label>
-            <br />
-            <label>
-              <input
-                type="radio"
-                name="highContrast"
-                value="grayscale"
-                checked={highContrastType === 'grayscale'}
-                onChange={handleHighContrastChange}
-              />
-              Greyscale
-            </label>
-            <br />
-            <label>
-              <input
-                type="radio"
-                name="highContrast"
-                value="invert"
-                checked={highContrastType === 'invert'}
-                onChange={handleHighContrastChange}
-              />
-              Inverted
-            </label>
-            <br />
-            <label>
-              <input
-                type="radio"
-                name="highContrast"
-                value="yellow-on-black"
-                checked={highContrastType === 'yellow-on-black'}
-                onChange={handleHighContrastChange}
-              />
-              Yellow on black
-            </label>
-            <br />
-            <button id="toggleHighContrastBtn" onClick={toggleHighContrast}>
-              Apply Filter
-            </button>
-          </form>
+            <div className="accordion-body d-flex justify-content-center">
+              <form className="d-flex flex-column align-items-start">
+                <label >
+                  <input
+                    type="radio"
+                    name="highContrast"
+                    value="normal"
+                    checked={highContrastType === 'normal'}
+                    onChange={handleHighContrastChange}
+                  />
+                  Normal
+                </label>
+
+                <label>
+                  <input
+                    type="radio"
+                    name="highContrast"
+                    value="increased-contrast"
+                    checked={highContrastType === 'increased-contrast'}
+                    onChange={handleHighContrastChange}
+                  />
+                  Increased Contrast
+                </label>
+
+                <label>
+                  <input
+                    type="radio"
+                    name="highContrast"
+                    value="grayscale"
+                    checked={highContrastType === 'grayscale'}
+                    onChange={handleHighContrastChange}
+                  />
+                  Greyscale
+                </label>
+                
+                <label>
+                  <input
+                    type="radio"
+                    name="highContrast"
+                    value="invert"
+                    checked={highContrastType === 'invert'}
+                    onChange={handleHighContrastChange}
+                  />
+                  Inverted
+                </label>
+                
+                <label>
+                  <input
+                    type="radio"
+                    name="highContrast"
+                    value="yellow-on-black"
+                    checked={highContrastType === 'yellow-on-black'}
+                    onChange={handleHighContrastChange}
+                  />
+                  Yellow on black
+                </label>  
+                <button className="btn btn-primary align-self-center mt-1" id="toggleHighContrastBtn" onClick={toggleHighContrast}>
+                  Apply Filter
+                </button>
+              </form>
             </div>
           </div>
         </div>
@@ -379,56 +396,56 @@ function App() {
             aria-labelledby="colorBlindnessHeader"
             data-bs-parent="#accessibilityAccordion"
           >
-            <div className="accordion-body">
-            <form>
-            <label>
-              <input
-                type="radio"
-                name="colorBlindness"
-                value="normal"
-                checked={colorBlindness === 'normal'}
-                onChange={handleColorBlindnessChange}
-              />
-              Normal Vision
-            </label>
-            <br />
-            <label>
-              <input
-                type="radio"
-                name="colorBlindness"
-                value="protanomaly"
-                checked={colorBlindness === 'protanomaly'}
-                onChange={handleColorBlindnessChange}
-              />
-              Protanomaly (Red-Green Color Blindness)
-            </label>
-            <br />
-            <label>
-              <input
-                type="radio"
-                name="colorBlindness"
-                value="deuteranomaly"
-                checked={colorBlindness === 'deuteranomaly'}
-                onChange={handleColorBlindnessChange}
-              />
-              Deuteranomaly (Green-Red Color Blindness)
-            </label>
-            <br />
-            <label>
-              <input
-                type="radio"
-                name="colorBlindness"
-                value="tritanomaly"
-                checked={colorBlindness === 'tritanomaly'}
-                onChange={handleColorBlindnessChange}
-              />
-              Tritanomaly (Blue-Yellow Color Blindness)
-            </label>
-            <br />
-            <button type="button" onClick={toggleColorBlindFilter}>
-              Apply Color Blindness Filter
-            </button>
-          </form>
+            <div className="accordion-body d-flex justify-content-center">
+              <form className='d-flex flex-column align-items-start'>
+                <label>
+                  <input
+                    type="radio"
+                    name="colorBlindness"
+                    value="normal"
+                    checked={colorBlindness === 'normal'}
+                    onChange={handleColorBlindnessChange}
+                  />
+                  Normal Vision
+                </label>
+
+                <label>
+                  <input
+                    type="radio"
+                    name="colorBlindness"
+                    value="protanomaly"
+                    checked={colorBlindness === 'protanomaly'}
+                    onChange={handleColorBlindnessChange}
+                  />
+                  Protanomaly (Red-Green)
+                </label>
+
+                <label>
+                  <input
+                    type="radio"
+                    name="colorBlindness"
+                    value="deuteranomaly"
+                    checked={colorBlindness === 'deuteranomaly'}
+                    onChange={handleColorBlindnessChange}
+                  />
+                  Deuteranomaly (Green-Red)
+                </label>
+
+                <label>
+                  <input
+                    type="radio"
+                    name="colorBlindness"
+                    value="tritanomaly"
+                    checked={colorBlindness === 'tritanomaly'}
+                    onChange={handleColorBlindnessChange}
+                  />
+                  Tritanomaly (Blue-Yellow)
+                </label>
+
+                <button className="btn btn-primary align-self-center mt-1" type="button" onClick={toggleColorBlindFilter}>
+                  Apply Color Blindness Filter
+                </button>
+              </form>
             </div>
           </div>
         </div>
@@ -461,13 +478,24 @@ function App() {
                 onChange={(e) => setTextTTS(e.target.value)}
                 value={textTTS}
               />
-              <button onClick={() => handleTTS("start")}>Start TTS</button>
-              <button onClick={() => handleTTS("pause")}>Pause</button>
-              <button onClick={() => handleTTS("resume")}>Resume</button>
-              <button onClick={() => handleTTS("stop")}>Stop</button>
-              <button onClick={() => {handleTTS("clear");
-                                      setTextTTS("");}
-              }>Clear</button>
+              <label htmlFor='rate'>Rate:</label>
+              <input type="number" 
+                min={1}
+                step={0.1}
+                max={3}
+                name="rate"
+                onChange={(e) => setRateTTS(e.target.value)}
+                value={rateTTS}
+               />
+              <div className="tts-button-container d-flex flex-column">
+                <button className="btn btn-primary my-1" onClick={() => handleTTS("start")}>Start</button>
+                <button className="btn btn-outline-primary my-1" onClick={() => handleTTS("pause")}>Pause</button>
+                <button className="btn btn-outline-info my-1" onClick={() => handleTTS("resume")}>Resume</button>
+                <button className="btn btn-danger my-1" onClick={() => handleTTS("stop")}>Stop</button>
+                <button className="btn btn-secondary my-1"onClick={() => {handleTTS("clear");
+                                        setTextTTS("");}
+                }>Clear</button>
+              </div>
             </div>
           </div>
         </div>

@@ -5,13 +5,22 @@
   text-align: center;
 }
 
-input{
+input, textarea{
   background-color: transparent;
   box-shadow: none;
   border: 1px solid #ccc;
   border-radius: 6px;
   color: black;
 }
+
+textarea::placeholder{
+  color: rgb(132, 132, 132);
+}
+
+input[type="radio"]{
+  margin-right: 0.5rem;
+}
+
 
 .accordion{
   min-width: 280px;
@@ -82,6 +91,6 @@ input{
   margin-bottom: 0.2rem;
 }
 
-.rectangle-container{
-
+#tts-button-container button{
+  margin: 0.5rem 0;
 }
