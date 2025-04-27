@@ -10,38 +10,30 @@ function App() {
   const [highContrastType, setHighContrastType] = useState<string>('normal')
   const [colorBlindness, setColorBlindness] = useState<string>('normal')
   const [magnifyingGlassActive, setMagnifyingGlassActive] = useState<boolean>(false);
-  const [magnifyingScale, setMagnifyingScale] = useState<string>(
-    () => JSON.parse(localStorage.getItem('magnifyingGlassPreferences') || '{}').magnifyingScale || '2'
-  );
-  const [magnifyingSize, setMagnifyingSize] = useState<string>(
-    () => JSON.parse(localStorage.getItem('magnifyingGlassPreferences') || '{}').magnifyingSize || '200'
-  );
-  const [magnifyingHeight, setMagnifyingHeight] = useState<string>(
-    () => JSON.parse(localStorage.getItem('magnifyingGlassPreferences') || '{}').magnifyingHeight || '200'
-  );
-  const [magnifyingWidth, setMagnifyingWidth] = useState<string>(
-    () => JSON.parse(localStorage.getItem('magnifyingGlassPreferences') || '{}').magnifyingWidth || '400'
-  );
-  const [isRectangle, setIsRectangle] = useState<boolean>(
-    () => JSON.parse(localStorage.getItem('magnifyingGlassPreferences') || '{}').isRectangle || false
-  );
-  const [textTTS, setTextTTS] = useState<string>(
-    () => JSON.parse(localStorage.getItem('textToSpeechPreferences') || '{}').textTTS || ''
-  )
-  const [rateTTS, setRateTTS] = useState<string>(
-    () => JSON.parse(localStorage.getItem('textToSpeechPreferences') || '{}').rateTTS || '1.0'
-  )
+  const [magnifyingScale, setMagnifyingScale] = useState<string>('2');
+  const [magnifyingSize, setMagnifyingSize] = useState<string>('100');
+  const [magnifyingHeight, setMagnifyingHeight] = useState<string>('200');
+  const [magnifyingWidth, setMagnifyingWidth] = useState<string>('400');
+  const [isRectangle, setIsRectangle] = useState<boolean>(false);
+  const [textTTS, setTextTTS] = useState<string>('');
+  const [rateTTS, setRateTTS] = useState<string>('1.0');
 
   useEffect(() => {
-    const saved = localStorage.getItem('magnifyingGlassPreferences');
-    if (saved) {
-      const preferences = JSON.parse(saved);
-      setMagnifyingScale(preferences.magnifyingScale);
-      setMagnifyingSize(preferences.magnifyingSize);
-      setIsRectangle(preferences.isRectangle);
-      setMagnifyingHeight(preferences.magnifyingHeight);
-      setMagnifyingWidth(preferences.magnifyingWidth);
-    }
+    chrome.storage.local.get(['magnifyingGlassPreferences', 'textToSpeechPreferences'], (result) => {
+      if (result.magnifyingGlassPreferences) {
+        const prefs = result.magnifyingGlassPreferences;
+        setMagnifyingScale(prefs.magnifyingScale || '2');
+        setMagnifyingSize(prefs.magnifyingSize || '100');
+        setIsRectangle(prefs.isRectangle ?? false);
+        setMagnifyingHeight(prefs.magnifyingHeight || '200');
+        setMagnifyingWidth(prefs.magnifyingWidth || '400');
+      }
+      if (result.textToSpeechPreferences){
+        const prefs = result.textToSpeechPreferences;
+        setTextTTS(prefs.textTTS);
+        setRateTTS(prefs.rateTTS);
+      }
+    });
   }, []);
 
 
@@ -75,13 +67,15 @@ function App() {
         } 
       });
     setMagnifyingGlassActive(!magnifyingGlassActive);
-    localStorage.setItem('magnifyingGlassPreferences', JSON.stringify({
-      magnifyingScale: magnifyingScale,
-      magnifyingSize: magnifyingSize,
-      isRectangle: isRectangle,
-      magnifyingHeight: magnifyingHeight,
-      magnifyingWidth: magnifyingWidth,
-    }))
+    chrome.storage.local.set({
+      magnifyingGlassPreferences: {
+        magnifyingScale: magnifyingScale,
+        magnifyingSize: magnifyingSize,
+        isRectangle: isRectangle,
+        magnifyingHeight: magnifyingHeight,
+        magnifyingWidth: magnifyingWidth,
+      }
+    });
   };
 
   const toggleHighContrast = () => {
@@ -154,15 +148,24 @@ function App() {
             else if(interrupt==='clear'){
               chrome.runtime.sendMessage({ action: 'stopTTS' });
               console.log('Clear TTS and stop message sent');
-            }
+               // Clear textTTS and rateTTS in the storage
+                chrome.storage.local.set({
+                  textToSpeechPreferences: {
+                    textTTS: "", // Set to empty string when clearing
+                    rateTTS: rateTTS
+                  }
+                });
+              }
           },
         });
       }   
     });
-    localStorage.setItem('textToSpeechPreferences', JSON.stringify({
-      textTTS: textTTS,
-      rateTTS: rateTTS
-    }))
+    chrome.storage.local.set({
+      textToSpeechPreferences: {
+        textTTS: textTTS,
+        rateTTS: rateTTS
+      }
+    });
   }
 
   return (

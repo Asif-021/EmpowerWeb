@@ -543,24 +543,33 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
-  if (message.action === "toggleMagnifyingGlassShortcut"){
-    console.log("Received Shortcut in content script")
-    const storedPrefs = localStorage.getItem('magnifyingGlassPreferences');
-    const savedPreferences = storedPrefs ? JSON.parse(storedPrefs) : {};
-    
-    console.log('Current size in kbs: ', savedPreferences.magnifyingSize)
-    const magnifyingScale = savedPreferences.magnifyingScale || 2;
-    const magnifyingSize = savedPreferences.magnifyingSize || 100;
-    const magnifyingHeight = savedPreferences.magnifyingHeight || 200;
-    const magnifyingWidth = savedPreferences.magnifyingWidth || 400;
-    const isRectangle = savedPreferences.isRectangle || false;
-
-    MagnifyingGlassManager.toggle(magnifyingScale, magnifyingSize, 
-      isRectangle, magnifyingHeight, magnifyingWidth);
-
-    sendResponse({success: true})
-    
+  if (message.action === "toggleMagnifyingGlassShortcut") {
+    console.log("Received Shortcut in content script");
+  
+    chrome.storage.local.get(['magnifyingGlassPreferences'], (result) => {
+      const savedPreferences = result.magnifyingGlassPreferences || {};
+  
+      console.log('Current size in kbs:', savedPreferences.magnifyingSize);
+  
+      const magnifyingScale = savedPreferences.magnifyingScale || 2;
+      const magnifyingSize = savedPreferences.magnifyingSize || 100;
+      const magnifyingHeight = savedPreferences.magnifyingHeight || 200;
+      const magnifyingWidth = savedPreferences.magnifyingWidth || 400;
+      const isRectangle = savedPreferences.isRectangle ?? false;
+  
+      MagnifyingGlassManager.toggle(
+        magnifyingScale,
+        magnifyingSize,
+        isRectangle,
+        magnifyingHeight,
+        magnifyingWidth
+      );
+  
+      sendResponse({ success: true });
+    });
+    return true;
   }
+  
 
   if (message.action === 'toggleHighContrast') {
     console.log('Toggling High Contrast Mode');
