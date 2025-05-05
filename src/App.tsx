@@ -185,6 +185,7 @@ function App() {
             >
               Magnifying Glass
             </button>
+            
           </h2>
           <div
             id="magnifyingGlass"
@@ -192,6 +193,9 @@ function App() {
             aria-labelledby="magnifyingGlassHeader"
             data-bs-parent="#accessibilityAccordion"
           >
+            <div className="shortcut-hint mt-2">
+              <em>Shortcut: <strong>Ctrl+Shift+1</strong> / <strong>Cmd+Shift+1</strong> </em>
+            </div>
             <div className="accordion-body d-flex flex-column">
               <div className="form-check form-switch d-flex mb-0 ps-0">
                 <label className="form-check-label mb-0" htmlFor="flexSwitchCheckDefault">Rectangular Shape</label>
@@ -287,6 +291,9 @@ function App() {
             aria-labelledby="backgroundColorHeader"
             data-bs-parent="#accessibilityAccordion"
           >
+            <div className="shortcut-hint mt-2">
+              <em>Note: <strong>For use on static webpages</strong></em>
+            </div>
             <div className="accordion-body d-flex flex-column align-items-center">
               Select Colour:
               <input className="mt-2 mb-2" type="color" onChange={(e) => setColour(e.currentTarget.value)} />
@@ -481,15 +488,19 @@ function App() {
                 onChange={(e) => setTextTTS(e.target.value)}
                 value={textTTS}
               />
-              <label htmlFor='rate'>Rate:</label>
-              <input type="number" 
-                min={1}
-                step={0.1}
-                max={3}
-                name="rate"
-                onChange={(e) => setRateTTS(e.target.value)}
-                value={rateTTS}
-               />
+              <div className="rate-container">
+                <label htmlFor='rate'>Speed:</label>
+                <input 
+                  className='ms-1'
+                  type="number" 
+                  min={1}
+                  step={0.1}
+                  max={3}
+                  name="rate"
+                  onChange={(e) => setRateTTS(e.target.value)}
+                  value={rateTTS}
+                />
+              </div>
               <div className="tts-button-container d-flex flex-column">
                 <button className="btn btn-primary my-1" onClick={() => handleTTS("start")}>Start</button>
                 <button className="btn btn-outline-primary my-1" onClick={() => handleTTS("pause")}>Pause</button>

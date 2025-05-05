@@ -94,3 +94,9 @@ input[type="radio"]{
 #tts-button-container button{
   margin: 0.5rem 0;
 }
+
+.shortcut-hint {
+  font-size: 0.75rem;
+  color: #6c757d; /* Bootstrap's text-muted color */
+  text-align: center;
+}
